@@ -1,9 +1,21 @@
-import { AssessmentRecord, DailyMoodRecord, JournalSession, OfflineSyncStatus } from '../types';
-import { saveAssessmentToFirestore, saveDailyMoodToFirestore, saveJournalSessionToFirestore } from './firebase';
+import {
+  AssessmentRecord,
+  DailyMoodRecord,
+  JournalSession,
+  UserInteraction,
+  OfflineSyncStatus,
+} from '../types';
+import {
+  saveAssessmentToFirestore,
+  saveDailyMoodToFirestore,
+  saveJournalSessionToFirestore,
+  saveInteractionToFirestore,
+} from './firebase';
 
 const STORAGE_KEYS = {
   ASSESSMENTS: 'mindpulse_offline_assessments',
   JOURNALS: 'mindpulse_offline_journals',
+  INTERACTIONS: 'mindpulse_offline_interactions',
   DAILY_MOODS: 'mindpulse_offline_moods',
   LAST_SYNC: 'mindpulse_last_sync_time',
 };
@@ -52,6 +64,28 @@ export function saveLocalJournal(session: JournalSession): void {
   }
 }
 
+export function getLocalInteractions(userId?: string): UserInteraction[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.INTERACTIONS);
+    if (!raw) return [];
+    const list: UserInteraction[] = JSON.parse(raw);
+    if (!userId) return list;
+    return list.filter((item) => item.userId === userId);
+  } catch {
+    return [];
+  }
+}
+
+export function saveLocalInteraction(interaction: UserInteraction): void {
+  try {
+    const existing = getLocalInteractions();
+    const updated = [interaction, ...existing.filter((i) => i.id !== interaction.id)];
+    localStorage.setItem(STORAGE_KEYS.INTERACTIONS, JSON.stringify(updated.slice(0, 100)));
+  } catch (err) {
+    console.error('Failed to write interaction to local storage:', err);
+  }
+}
+
 export function getLocalMoods(userId?: string): DailyMoodRecord[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.DAILY_MOODS);
@@ -80,14 +114,17 @@ export const saveLocalDailyMood = saveLocalMood;
 export function getPendingSyncCounts(userId?: string): {
   assessments: number;
   journals: number;
+  interactions: number;
   moods: number;
 } {
   const localAssessments = getLocalAssessments(userId).filter((a) => !a.syncedToCloud);
   const localJournals = getLocalJournals(userId).filter((j) => !j.syncedToCloud);
+  const localInteractions = getLocalInteractions(userId).filter((i) => !i.syncedToCloud);
   const localMoods = getLocalMoods(userId).filter((m) => !m.syncedToCloud);
   return {
     assessments: localAssessments.length,
     journals: localJournals.length,
+    interactions: localInteractions.length,
     moods: localMoods.length,
   };
 }
@@ -97,17 +134,24 @@ export function getPendingSyncCounts(userId?: string): {
  */
 export async function syncPendingData(
   userId: string
-): Promise<{ syncedAssessments: number; syncedJournals: number; syncedMoods: number }> {
+): Promise<{
+  syncedAssessments: number;
+  syncedJournals: number;
+  syncedInteractions: number;
+  syncedMoods: number;
+}> {
   if (!navigator.onLine || !userId) {
-    return { syncedAssessments: 0, syncedJournals: 0, syncedMoods: 0 };
+    return { syncedAssessments: 0, syncedJournals: 0, syncedInteractions: 0, syncedMoods: 0 };
   }
 
   const allAssessments = getLocalAssessments();
   const allJournals = getLocalJournals();
+  const allInteractions = getLocalInteractions();
   const allMoods = getLocalMoods();
 
   let syncedAssessments = 0;
   let syncedJournals = 0;
+  let syncedInteractions = 0;
   let syncedMoods = 0;
 
   // Sync assessments
@@ -144,6 +188,23 @@ export async function syncPendingData(
     })
   );
 
+  // Sync interactions
+  const updatedInteractions = await Promise.all(
+    allInteractions.map(async (item) => {
+      if (item.userId === userId && !item.syncedToCloud) {
+        try {
+          await saveInteractionToFirestore(userId, item);
+          syncedInteractions++;
+          return { ...item, syncedToCloud: true };
+        } catch (e) {
+          console.warn('Failed to sync interaction:', item.id, e);
+          return item;
+        }
+      }
+      return item;
+    })
+  );
+
   // Sync daily moods
   const updatedMoods = await Promise.all(
     allMoods.map(async (item) => {
@@ -163,10 +224,11 @@ export async function syncPendingData(
 
   localStorage.setItem(STORAGE_KEYS.ASSESSMENTS, JSON.stringify(updatedAssessments));
   localStorage.setItem(STORAGE_KEYS.JOURNALS, JSON.stringify(updatedJournals));
+  localStorage.setItem(STORAGE_KEYS.INTERACTIONS, JSON.stringify(updatedInteractions));
   localStorage.setItem(STORAGE_KEYS.DAILY_MOODS, JSON.stringify(updatedMoods));
   localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
 
-  return { syncedAssessments, syncedJournals, syncedMoods };
+  return { syncedAssessments, syncedJournals, syncedInteractions, syncedMoods };
 }
 
 export function getLastSyncTime(): number | null {

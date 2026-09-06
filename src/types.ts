@@ -130,7 +130,37 @@ export interface JournalSession {
   updatedAt: number;
   messages: ChatMessage[];
   associatedScore?: number;
+  summary?: string;
+  location?: MindfulLocation;
   syncedToCloud: boolean;
+}
+
+export interface UserInteraction {
+  id: string;
+  userId: string;
+  createdAt: number;
+  type: 'journal' | 'chat' | 'summary' | 'brainstorm';
+  prompt: string;
+  response: string;
+  summary?: string;
+  brainstormIdeas?: string;
+  location?: {
+    lat: number;
+    lng: number;
+    title: string;
+    category?: string;
+  };
+  syncedToCloud: boolean;
+}
+
+export interface MindfulLocation {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  lat: number;
+  lng: number;
+  reflectionPrompt?: string;
 }
 
 export interface OfflineSyncStatus {
@@ -138,6 +168,7 @@ export interface OfflineSyncStatus {
   isSyncing: boolean;
   pendingAssessmentsCount: number;
   pendingJournalsCount: number;
+  pendingInteractionsCount?: number;
   pendingMoodsCount?: number;
   lastSyncedAt: number | null;
 }

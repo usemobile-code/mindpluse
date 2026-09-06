@@ -11,14 +11,15 @@ import {
   Wind,
   Heart,
   Globe,
+  Compass,
 } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { Language, OfflineSyncStatus } from '../types';
 import { getTranslation } from '../lib/i18n';
 
 interface HeaderProps {
-  activeTab: 'assessment' | 'daily_mood' | 'journal' | 'history' | 'breathing';
-  setActiveTab: (tab: 'assessment' | 'daily_mood' | 'journal' | 'history' | 'breathing') => void;
+  activeTab: 'assessment' | 'daily_mood' | 'journal' | 'map' | 'history' | 'breathing';
+  setActiveTab: (tab: 'assessment' | 'daily_mood' | 'journal' | 'map' | 'history' | 'breathing') => void;
   user: User | null;
   openAuthModal: () => void;
   syncStatus: OfflineSyncStatus;
@@ -102,6 +103,18 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <BookOpen className="h-3.5 w-3.5" />
             {getTranslation('tabJournal', lang)}
+          </button>
+          <button
+            id="nav-tab-map"
+            onClick={() => setActiveTab('map')}
+            className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+              activeTab === 'map'
+                ? 'bg-[#5A5A40] text-[#f5f5f0] shadow-xs'
+                : 'text-[#7a7a6a] hover:text-[#4a4a3a]'
+            }`}
+          >
+            <Compass className="h-3.5 w-3.5" />
+            {getTranslation('tabMap', lang)}
           </button>
           <button
             id="nav-tab-breathing"
@@ -269,6 +282,15 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <BookOpen className="h-4 w-4" />
           {getTranslation('tabJournal', lang)}
+        </button>
+        <button
+          onClick={() => setActiveTab('map')}
+          className={`flex flex-col items-center gap-0.5 px-2.5 py-1 text-[11px] font-medium rounded-full shrink-0 ${
+            activeTab === 'map' ? 'text-[#5A5A40] font-bold' : 'text-[#8a8a7a]'
+          }`}
+        >
+          <Compass className="h-4 w-4" />
+          {getTranslation('tabMap', lang)}
         </button>
         <button
           onClick={() => setActiveTab('breathing')}

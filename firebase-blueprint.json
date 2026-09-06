@@ -46,6 +46,35 @@
         "stressModifier": { "type": "number" },
         "syncedToCloud": { "type": "boolean" }
       }
+    },
+    "UserInteraction": {
+      "path": "users/{userId}/interactions/{interactionId}",
+      "description": "User prompts, AI responses, summaries, and reflections isolated strictly to this specific user.",
+      "fields": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "type": { "type": "string" },
+        "prompt": { "type": "string" },
+        "response": { "type": "string" },
+        "summary": { "type": "string" },
+        "location": { "type": "map" },
+        "syncedToCloud": { "type": "boolean" }
+      }
+    },
+    "UserMindfulPlace": {
+      "path": "users/{userId}/places/{placeId}",
+      "description": "User geotagged serene spots and reflection locations for Google Maps integration.",
+      "fields": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "category": { "type": "string" }
+      }
     }
   }
 }

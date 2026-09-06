@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { BarChart3, Calendar, Cloud, CloudOff, ArrowUpRight, Sparkles, BookOpen, Clock, ChevronRight } from 'lucide-react';
+import {
+  BarChart3,
+  Calendar,
+  Cloud,
+  CloudOff,
+  ArrowUpRight,
+  Sparkles,
+  BookOpen,
+  Clock,
+  ChevronRight,
+  MapPin,
+  FileText,
+} from 'lucide-react';
 import { AssessmentRecord, JournalSession } from '../types';
 import { STRESS_TIERS } from '../lib/scoring';
 
@@ -245,14 +257,30 @@ export const HistoryTrends: React.FC<HistoryTrendsProps> = ({
                   className="rounded-3xl border border-[#e0e0d5] bg-white p-5 shadow-2xs space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-[#4a4a3a]">
-                      {j.title}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-[#4a4a3a]">
+                        {j.title}
+                      </span>
+                      {j.location && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#ecece4] px-2.5 py-0.5 text-[10px] font-sans font-semibold text-[#5A5A40]">
+                          <MapPin className="h-3 w-3" />
+                          <span>{j.location.title}</span>
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[11px] text-[#7a7a6a] font-sans">{dateStr}</span>
                   </div>
                   <p className="text-xs italic text-[#7a7a6a] line-clamp-2">
                     {j.messages[1]?.text || j.messages[0]?.text}
                   </p>
+                  {j.summary && (
+                    <div className="mt-1.5 rounded-xl bg-[#fafaf7] p-2.5 text-xs text-[#5A5A40] border border-[#e8e8df]">
+                      <span className="font-semibold block font-sans text-[10px] uppercase tracking-wider text-[#8a8a7a] mb-0.5">
+                        Mindful Summary:
+                      </span>
+                      <p className="line-clamp-2 italic">{j.summary}</p>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between text-[11px] text-[#8a8a7a] font-sans pt-1">
                     <span>{j.messages.length} messages in dialogue</span>
                     <span className="text-[#5A5A40] font-medium">Encrypted in Vault</span>

@@ -16,6 +16,7 @@ export const TRANSLATIONS = {
     tabJournal: 'Mindful Journal',
     tabBreathing: 'Somatic Breathing',
     tabTrends: 'Trends & Vault',
+    tabMap: 'Mindful Map',
     
     // Daily Mood Check-In
     dailyMoodTitle: 'Daily Emotional Pulse Check-In',
@@ -167,6 +168,7 @@ export const TRANSLATIONS = {
     tabJournal: 'माइंडफुल डायरी',
     tabBreathing: 'प्राणायाम और श्वास',
     tabTrends: 'रुझान और तिजोरी',
+    tabMap: 'शांति मानचित्र',
 
     // Daily Mood Check-In
     dailyMoodTitle: 'दैनिक मनोदशा और भावनात्मक जाँच',

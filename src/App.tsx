@@ -5,9 +5,11 @@ import { AuthModal } from './components/AuthModal';
 import { AssessmentFlow } from './components/AssessmentFlow';
 import { StressResults } from './components/StressResults';
 import { MindfulChat } from './components/MindfulChat';
+import { MindfulMap } from './components/MindfulMap';
 import { BreathingExercise } from './components/BreathingExercise';
 import { HistoryTrends } from './components/HistoryTrends';
 import { DailyMoodCheckIn } from './components/DailyMoodCheckIn';
+import { LandingPage } from './components/LandingPage';
 import {
   auth,
   onAuthStateChanged,
@@ -16,7 +18,7 @@ import {
   fetchUserDailyMoods,
   saveAssessmentToFirestore,
   saveDailyMoodToFirestore,
-  signInAsGuest,
+  signOutUser,
 } from './lib/firebase';
 import {
   calculateStressScore,
@@ -41,17 +43,22 @@ import {
   Language,
   MoodType,
   OfflineSyncStatus,
+  MindfulLocation,
 } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'assessment' | 'daily_mood' | 'journal' | 'history' | 'breathing'>('assessment');
+  const [activeTab, setActiveTab] = useState<
+    'assessment' | 'daily_mood' | 'journal' | 'map' | 'history' | 'breathing'
+  >('assessment');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showLanding, setShowLanding] = useState<boolean>(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<AssessmentRecord | null>(null);
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [journals, setJournals] = useState<JournalSession[]>([]);
   const [currentMood, setCurrentMood] = useState<DailyMoodRecord | null>(null);
   const [recentMoods, setRecentMoods] = useState<DailyMoodRecord[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<MindfulLocation | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSavingMood, setIsSavingMood] = useState(false);
 
@@ -153,6 +160,9 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
+        if (!user.isAnonymous) {
+          setShowLanding(false);
+        }
         // Load local records first for instant responsiveness
         const localList = getLocalAssessments(user.uid);
         if (localList.length > 0) {
@@ -196,11 +206,6 @@ export default function App() {
             console.warn('Cloud fetch deferred:', err);
           }
         }
-      } else {
-        // Automatically start guest session so user has seamless immediate experience
-        signInAsGuest().catch((e) => {
-          console.warn('Guest sign-in fallback:', e);
-        });
       }
       updatePendingCount();
     });
@@ -373,6 +378,17 @@ export default function App() {
     setActiveTab('journal');
   };
 
+  // If user has not signed in or entered the dashboard, show the Landing Page
+  if (showLanding && (!currentUser || currentUser.isAnonymous)) {
+    return (
+      <LandingPage
+        onAuthenticated={() => setShowLanding(false)}
+        lang={lang}
+        setLang={setLang}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f5f0] font-serif text-[#4a4a3a] antialiased flex flex-col">
       {/* Top App Bar with Natural Tones Design & Language Switcher */}
@@ -429,15 +445,31 @@ export default function App() {
             currentStressScore={currentRecord?.score}
             dominantFactor={
               currentRecord
-                ? Object.entries(currentRecord.categoryScores || {}).sort((a, b) => Number(b[1]) - Number(a[1]))[0]?.[0]
+                ? Object.entries(currentRecord.categoryScores || {}).sort(
+                    (a, b) => Number(b[1]) - Number(a[1])
+                  )[0]?.[0]
                 : undefined
             }
             dailyMood={currentMood}
             lang={lang}
+            selectedLocation={selectedLocation}
+            onClearLocation={() => setSelectedLocation(null)}
             onSaveSession={(newSession) => {
               setJournals((prev) => [newSession, ...prev]);
               updatePendingCount();
             }}
+          />
+        )}
+
+        {activeTab === 'map' && (
+          <MindfulMap
+            userId={currentUser?.uid}
+            journals={journals}
+            onStartReflectionAtLocation={(loc) => {
+              setSelectedLocation(loc);
+              setActiveTab('journal');
+            }}
+            lang={lang}
           />
         )}
 
@@ -467,4 +499,3 @@ export default function App() {
     </div>
   );
 }
-
