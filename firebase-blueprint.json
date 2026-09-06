@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "UserAssessment": {
+      "path": "users/{userId}/assessments/{assessmentId}",
+      "description": "User mental stress assessment records isolated by user ID with zero cross-user leakage.",
+      "fields": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "score": { "type": "number" },
+        "baseScore": { "type": "number" },
+        "appliedMoodModifier": { "type": "number" },
+        "tier": { "type": "string" },
+        "emoji": { "type": "string" },
+        "categoryScores": { "type": "map" },
+        "answers": { "type": "map" },
+        "recommendations": { "type": "map" },
+        "syncedToCloud": { "type": "boolean" }
+      }
+    },
+    "UserJournal": {
+      "path": "users/{userId}/journal_sessions/{sessionId}",
+      "description": "User mindful journaling sessions and AI reflections isolated by user ID.",
+      "fields": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "messages": { "type": "list" },
+        "syncedToCloud": { "type": "boolean" }
+      }
+    },
+    "UserDailyMood": {
+      "path": "users/{userId}/daily_moods/{moodId}",
+      "description": "User daily emotional pulse check-in records with mood selection, note, and stress calibration modifier.",
+      "fields": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "date": { "type": "string" },
+        "mood": { "type": "string" },
+        "emoji": { "type": "string" },
+        "label": { "type": "string" },
+        "note": { "type": "string" },
+        "stressModifier": { "type": "number" },
+        "syncedToCloud": { "type": "boolean" }
+      }
+    }
+  }
+}

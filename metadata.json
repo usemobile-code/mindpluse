@@ -1,0 +1,6 @@
+{
+  "name": "MindPulse - Mental Health & Stress Analyzer",
+  "description": "Interactive mental health assessment that evaluates stress levels out of 1000 with emoji representation, personalized wellness recommendations, multi-turn Gemini AI journaling, Firebase authentication, and offline sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
